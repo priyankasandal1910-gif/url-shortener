@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 
+const API_URL = "https://url-shortener-production-0af9.up.railway.app";
+
 function App() {
   const [url, setUrl] = useState("");
   const [shortUrl, setShortUrl] = useState("");
@@ -8,7 +10,7 @@ function App() {
   const [copied, setCopied] = useState(false);
 
   const getUrls = async () => {
-    const response = await fetch("http://127.0.0.1:8000/all");
+    const response = await fetch(`${API_URL}/all`);
     const data = await response.json();
     setUrls(data);
   };
@@ -20,7 +22,7 @@ function App() {
   const shortenUrl = async () => {
     if (!url) return;
 
-    const response = await fetch("http://127.0.0.1:8000/shorten", {
+    const response = await fetch(`${API_URL}/shorten`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -45,7 +47,7 @@ function App() {
   };
 
   const deleteUrl = async (shortCode) => {
-    await fetch(`http://127.0.0.1:8000/delete/${shortCode}`, {
+    await fetch(`${API_URL}/delete/${shortCode}`, {
       method: "DELETE",
     });
 
