@@ -1,34 +1,66 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, HttpUrl
-from sqlalchemy import create_engine,Column, Integer, String
+from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.orm import sessionmaker, declarative_base, Session
 from fastapi.responses import RedirectResponse
-import string, random
+import string
+import random
+import os
 
-DATABASE_URL = "sqlite:///urls.db"
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread":False})
-SessionLocal = sessionmaker(bind = engine, autoflush = False, autocommit = False)
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///urls.db")
+BASE_URL = os.getenv("BASE_URL", "http://localhost:8000").rstrip("/")
+
+if DATABASE_URL.startswith("mysql://"):
+    DATABASE_URL = DATABASE_URL.replace(
+        "mysql://",
+        "mysql+pymysql://",
+        1
+    )
+
+if DATABASE_URL.startswith("sqlite"):
+    engine = create_engine(
+        DATABASE_URL,
+        connect_args={"check_same_thread": False}
+    )
+else:
+    engine = create_engine(
+        DATABASE_URL,
+        pool_pre_ping=True
+    )
+
+SessionLocal = sessionmaker(
+    bind=engine,
+    autoflush=False,
+    autocommit=False
+)
+
 Base = declarative_base()
+
 
 def get_db():
     db = SessionLocal()
     try:
         yield db
-    finally :
+    finally:
         db.close()
+
 
 class URL(Base):
     __tablename__ = "urls"
-    id = Column(Integer, primary_key = True, index = True)
+
+    id = Column(Integer, primary_key=True, index=True)
     original_url = Column(String, unique=True, nullable=False)
     short_code = Column(String, unique=True, index=True, nullable=False)
+
 
 Base.metadata.create_all(bind=engine)
 
 
 class URLRequest(BaseModel):
     original_url: HttpUrl
+
+
 class URLResponse(BaseModel):
     original_url: str
     short_code: str
@@ -36,9 +68,20 @@ class URLResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
 def generate_short_code(length: int = 6):
-    return "".join(random.choices(string.ascii_letters + string.digits, k=length))
+    return "".join(
+        random.choices(
+            string.ascii_letters + string.digits,
+            k=length
+        )
+    )
+
+
 app = FastAPI(title="URL Shortener API")
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -47,31 +90,47 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
+
 @app.post("/shorten", response_model=URLResponse)
-def create_short_url(request: URLRequest, db: Session = Depends(get_db)):
+def create_short_url(
+    request: URLRequest,
+    db: Session = Depends(get_db)
+):
     original_url = str(request.original_url)
 
-    existing = db.query(URL).filter(URL.original_url == original_url).first()
+    existing = db.query(URL).filter(
+        URL.original_url == original_url
+    ).first()
+
     if existing:
-       return {
-        "original_url": existing.original_url,
-        "short_code": existing.short_code,
-        "short_url": f"http://localhost:8000/{existing.short_code}"
-    }
+        return {
+            "original_url": existing.original_url,
+            "short_code": existing.short_code,
+            "short_url": f"{BASE_URL}/{existing.short_code}"
+        }
 
     short_code = generate_short_code()
-    while db.query(URL).filter(URL.short_code == short_code).first():
-       short_code = generate_short_code()
 
-    new_url = URL(original_url=original_url, short_code=short_code)
+    while db.query(URL).filter(
+        URL.short_code == short_code
+    ).first():
+        short_code = generate_short_code()
+
+    new_url = URL(
+        original_url=original_url,
+        short_code=short_code
+    )
+
     db.add(new_url)
     db.commit()
     db.refresh(new_url)
+
     return {
-     "original_url": new_url.original_url,
-     "short_code": new_url.short_code,
-     "short_url": f"http://localhost:8000/{new_url.short_code}"
-   }
+        "original_url": new_url.original_url,
+        "short_code": new_url.short_code,
+        "short_url": f"{BASE_URL}/{new_url.short_code}"
+    }
+
 
 @app.get("/all", response_model=list[URLResponse])
 def get_all_urls(db: Session = Depends(get_db)):
@@ -82,27 +141,50 @@ def get_all_urls(db: Session = Depends(get_db)):
         result.append({
             "original_url": url.original_url,
             "short_code": url.short_code,
-            "short_url": f"http://localhost:8000/{url.short_code}"
+            "short_url": f"{BASE_URL}/{url.short_code}"
         })
 
     return result
 
 
 @app.get("/{short_code}")
-def redirect_to_original(short_code: str, db: Session = Depends(get_db)):
-    url_entry = db.query(URL).filter(URL.short_code == short_code).first()
+def redirect_to_original(
+    short_code: str,
+    db: Session = Depends(get_db)
+):
+    url_entry = db.query(URL).filter(
+        URL.short_code == short_code
+    ).first()
 
     if not url_entry:
-        raise HTTPException(status_code=404, detail="Short URL Not Found")
-    return RedirectResponse(url= url_entry.original_url)
+        raise HTTPException(
+            status_code=404,
+            detail="Short URL Not Found"
+        )
+
+    return RedirectResponse(
+        url=url_entry.original_url
+    )
+
+
 @app.delete("/delete/{short_code}")
-def delete_url(short_code: str, db: Session = Depends(get_db)):
-    url = db.query(URL).filter(URL.short_code == short_code).first()
+def delete_url(
+    short_code: str,
+    db: Session = Depends(get_db)
+):
+    url = db.query(URL).filter(
+        URL.short_code == short_code
+    ).first()
 
     if not url:
-        raise HTTPException(status_code=404, detail="URL Not Found")
+        raise HTTPException(
+            status_code=404,
+            detail="URL Not Found"
+        )
 
     db.delete(url)
     db.commit()
 
-    return {"message": "URL deleted Successfully"}
+    return {
+        "message": "URL deleted Successfully"
+    }
