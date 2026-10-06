@@ -50,8 +50,10 @@ class URL(Base):
     __tablename__ = "urls"
 
     id = Column(Integer, primary_key=True, index=True)
-    original_url = Column(String, unique=True, nullable=False)
-    short_code = Column(String, unique=True, index=True, nullable=False)
+    # original_url = Column(String, unique=True, nullable=False)
+    # short_code = Column(String, unique=True, index=True, nullable=False)
+    original_url = Column(String(2048), unique=True, nullable=False)
+    short_code = Column(String(6), unique=True, index=True, nullable=False)
 
 
 Base.metadata.create_all(bind=engine)
