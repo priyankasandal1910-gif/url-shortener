@@ -1,3 +1,4 @@
+
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, HttpUrl
@@ -15,6 +16,20 @@ if DATABASE_URL.startswith("mysql://"):
     DATABASE_URL = DATABASE_URL.replace(
         "mysql://",
         "mysql+pymysql://",
+        1
+    )
+
+if DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = DATABASE_URL.replace(
+        "postgresql://",
+        "postgresql+psycopg2://",
+        1
+    )
+
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace(
+        "postgres://",
+        "postgresql+psycopg2://",
         1
     )
 
@@ -50,8 +65,6 @@ class URL(Base):
     __tablename__ = "urls"
 
     id = Column(Integer, primary_key=True, index=True)
-    # original_url = Column(String, unique=True, nullable=False)
-    # short_code = Column(String, unique=True, index=True, nullable=False)
     original_url = Column(String(768), unique=True, nullable=False)
     short_code = Column(String(6), unique=True, index=True, nullable=False)
 
@@ -164,9 +177,7 @@ def redirect_to_original(
             detail="Short URL Not Found"
         )
 
-    return RedirectResponse(
-        url=url_entry.original_url
-    )
+    return RedirectResponse(url=url_entry.original_url)
 
 
 @app.delete("/delete/{short_code}")
