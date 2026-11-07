@@ -1,62 +1,68 @@
-# 🔗 Shortify — URL Shortener
+# 🔗 Shortify – URL Shortener
 
-A full-stack URL Shortener that converts long URLs into short, shareable links.
+A full-stack URL Shortener built using React and FastAPI that converts long URLs into short, shareable links.
 
 🌐 **Live Demo:** https://url-shortener-rosy-alpha.vercel.app/
 
----
+## ✨ Features
 
-## 📌 Overview
-
-Shortify is a full-stack URL shortening application built with React and FastAPI.
-
-Users can:
-- Create short URLs from long URLs
-- Open short URLs and get redirected to the original URL
-- View previously created URLs
-- Copy shortened URLs
+- Generate unique 6-character short URLs
+- Redirect short URLs to original URLs
+- Copy shortened URLs with one click
+- View URL history
 - Delete shortened URLs
+- Store URLs persistently in PostgreSQL
+- REST API powered by FastAPI
 
-The application uses a React frontend deployed on Vercel, a FastAPI backend deployed on Railway, and MySQL for persistent data storage.
+## 🛠️ Tech Stack
 
----
-
-## 🚀 Features
-
-- 🔗 Generate unique 6-character short URLs
-- ⚡ Fast URL shortening
-- 🔄 Automatic redirection to original URLs
-- 📋 Copy shortened URLs
-- 🗂️ View URL history
-- 🗑️ Delete shortened URLs
-- 💾 Persistent storage using MySQL
-- 🌐 Fully deployed and accessible online
-- 🔒 CORS-enabled API
-- ♻️ Existing URLs return their previously generated short URL
-
----
+| Category | Technologies |
+|---|---|
+| Frontend | React, Vite, CSS |
+| Backend | Python, FastAPI |
+| ORM | SQLAlchemy |
+| Database | Neon PostgreSQL |
+| Frontend Hosting | Vercel |
+| Backend Hosting | Render |
 
 ## 🏗️ Architecture
 
-```text
-                    ┌──────────────────────┐
-                    │      User / Browser  │
-                    └──────────┬───────────┘
-                               │
-                               ▼
-                    ┌──────────────────────┐
-                    │   React Frontend     │
-                    │      Vercel          │
-                    └──────────┬───────────┘
-                               │ REST API
-                               ▼
-                    ┌──────────────────────┐
-                    │   FastAPI Backend    │
-                    │      Railway         │
-                    └──────────┬───────────┘
-                               │
-                               ▼
-                    ┌──────────────────────┐
-                    │      MySQL DB        │
-                    │      Railway         │
-                    └──────────────────────┘
+Browser → React Frontend (Vercel) → FastAPI Backend (Render) → Neon PostgreSQL Database
+
+## 🔗 API Documentation
+
+https://url-shortener-hcy8.onrender.com/docs
+
+## 🚀 Live Application
+
+https://url-shortener-rosy-alpha.vercel.app/
+
+## 💻 Run Locally
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/priyankasandal1910-gif/url-shortener.git
+cd url-shortener
+```
+
+### 2. Backend Setup
+
+```bash
+pip install -r requirements.txt
+uvicorn main:app --reload
+```
+
+### 3. Frontend Setup
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+The frontend will run locally using Vite.
+
+## 👩‍💻 Author
+
+**Priyanka Sandal**
