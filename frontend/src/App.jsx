@@ -1,5 +1,5 @@
 jsx
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./App.css";
 
 const API_URL = "https://url-shortener-hcy8.onrender.com";
