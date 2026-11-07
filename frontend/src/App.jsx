@@ -1,8 +1,8 @@
-
+jsx
 import { useEffect, useState } from "react";
 import "./App.css";
 
-const API_URL = "https://url-shortener-production-0af9.up.railway.app";
+const API_URL = "https://url-shortener-hcy8.onrender.com";
 
 function App() {
   const [url, setUrl] = useState("");
@@ -21,7 +21,6 @@ function App() {
 
       const data = await response.json();
       setUrls(data);
-
     } catch (error) {
       console.error("Get URLs Error:", error);
     }
@@ -60,7 +59,6 @@ function App() {
       setUrl("");
 
       await getUrls();
-
     } catch (error) {
       console.error("Shorten URL Error:", error);
       alert(error.message || "Unable to connect to server");
@@ -94,7 +92,6 @@ function App() {
       if (shortUrl.includes(shortCode)) {
         setShortUrl("");
       }
-
     } catch (error) {
       console.error("Delete Error:", error);
       alert(error.message);
@@ -103,14 +100,12 @@ function App() {
 
   return (
     <div className="app">
-
       <nav>
         <div className="logo">🔗 Shortify</div>
         <div className="nav-text">Fast • Simple • Secure</div>
       </nav>
 
       <main>
-
         <div className="hero">
           <div className="badge">URL SHORTENER</div>
 
@@ -126,11 +121,9 @@ function App() {
         </div>
 
         <div className="card">
-
           <label>Paste your long URL</label>
 
           <div className="input-box">
-
             <span>🔗</span>
 
             <input
@@ -140,15 +133,11 @@ function App() {
               onChange={(e) => setUrl(e.target.value)}
             />
 
-            <button onClick={shortenUrl}>
-              Shorten
-            </button>
-
+            <button onClick={shortenUrl}>Shorten</button>
           </div>
 
           {shortUrl && (
             <div className="result">
-
               <div>
                 <small>Your shortened URL</small>
 
@@ -164,22 +153,17 @@ function App() {
               <button onClick={copyUrl}>
                 {copied ? "✓ Copied" : "Copy"}
               </button>
-
             </div>
           )}
-
         </div>
 
         {urls.length > 0 && (
           <div className="history">
-
             <h2>Your Links</h2>
 
             {urls.map((item) => (
               <div className="url-item" key={item.short_code}>
-
                 <div className="url-info">
-
                   <p className="original-url">
                     {item.original_url}
                   </p>
@@ -191,7 +175,6 @@ function App() {
                   >
                     {item.short_url}
                   </a>
-
                 </div>
 
                 <button
@@ -200,15 +183,12 @@ function App() {
                 >
                   Delete
                 </button>
-
               </div>
             ))}
-
           </div>
         )}
 
         <div className="features">
-
           <div>
             <strong>⚡ Fast</strong>
             <p>Create short links instantly.</p>
@@ -223,15 +203,12 @@ function App() {
             <strong>📱 Simple</strong>
             <p>Easy to share anywhere.</p>
           </div>
-
         </div>
-
       </main>
 
       <footer>
         Built with React + FastAPI
       </footer>
-
     </div>
   );
 }
