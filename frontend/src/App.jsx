@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import "./App.css";
 
@@ -9,63 +10,107 @@ function App() {
   const [urls, setUrls] = useState([]);
   const [copied, setCopied] = useState(false);
 
+  // Fetch all URLs
   const getUrls = async () => {
-    const response = await fetch(`${API_URL}/all`);
-    const data = await response.json();
-    setUrls(data);
+    try {
+      const response = await fetch(`${API_URL}/all`);
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch URL history");
+      }
+
+      const data = await response.json();
+      setUrls(data);
+
+    } catch (error) {
+      console.error("Get URLs Error:", error);
+    }
   };
 
   useEffect(() => {
     getUrls();
   }, []);
 
+  // Shorten URL
   const shortenUrl = async () => {
-    if (!url) return;
+    if (!url.trim()) {
+      alert("Please enter a URL");
+      return;
+    }
 
-    const response = await fetch(`${API_URL}/shorten`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        original_url: url,
-      }),
-    });
+    try {
+      const response = await fetch(`${API_URL}/shorten`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          original_url: url.trim(),
+        }),
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    setShortUrl(data.short_url);
-    setCopied(false);
-    setUrl("");
+      if (!response.ok) {
+        throw new Error(data.detail || "Failed to shorten URL");
+      }
 
-    getUrls();
+      setShortUrl(data.short_url);
+      setCopied(false);
+      setUrl("");
+
+      await getUrls();
+
+    } catch (error) {
+      console.error("Shorten URL Error:", error);
+      alert(error.message || "Unable to connect to server");
+    }
   };
 
-  const copyUrl = () => {
-    navigator.clipboard.writeText(shortUrl);
-    setCopied(true);
+  // Copy short URL
+  const copyUrl = async () => {
+    try {
+      await navigator.clipboard.writeText(shortUrl);
+      setCopied(true);
+    } catch (error) {
+      console.error("Copy Error:", error);
+      alert("Unable to copy URL");
+    }
   };
 
+  // Delete URL
   const deleteUrl = async (shortCode) => {
-    await fetch(`${API_URL}/delete/${shortCode}`, {
-      method: "DELETE",
-    });
+    try {
+      const response = await fetch(`${API_URL}/delete/${shortCode}`, {
+        method: "DELETE",
+      });
 
-    getUrls();
+      if (!response.ok) {
+        throw new Error("Failed to delete URL");
+      }
 
-    if (shortUrl.includes(shortCode)) {
-      setShortUrl("");
+      await getUrls();
+
+      if (shortUrl.includes(shortCode)) {
+        setShortUrl("");
+      }
+
+    } catch (error) {
+      console.error("Delete Error:", error);
+      alert(error.message);
     }
   };
 
   return (
     <div className="app">
+
       <nav>
         <div className="logo">🔗 Shortify</div>
         <div className="nav-text">Fast • Simple • Secure</div>
       </nav>
 
       <main>
+
         <div className="hero">
           <div className="badge">URL SHORTENER</div>
 
@@ -81,9 +126,11 @@ function App() {
         </div>
 
         <div className="card">
+
           <label>Paste your long URL</label>
 
           <div className="input-box">
+
             <span>🔗</span>
 
             <input
@@ -96,14 +143,20 @@ function App() {
             <button onClick={shortenUrl}>
               Shorten
             </button>
+
           </div>
 
           {shortUrl && (
             <div className="result">
+
               <div>
                 <small>Your shortened URL</small>
 
-                <a href={shortUrl} target="_blank">
+                <a
+                  href={shortUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   {shortUrl}
                 </a>
               </div>
@@ -111,17 +164,22 @@ function App() {
               <button onClick={copyUrl}>
                 {copied ? "✓ Copied" : "Copy"}
               </button>
+
             </div>
           )}
+
         </div>
 
         {urls.length > 0 && (
           <div className="history">
+
             <h2>Your Links</h2>
 
             {urls.map((item) => (
               <div className="url-item" key={item.short_code}>
+
                 <div className="url-info">
+
                   <p className="original-url">
                     {item.original_url}
                   </p>
@@ -133,6 +191,7 @@ function App() {
                   >
                     {item.short_url}
                   </a>
+
                 </div>
 
                 <button
@@ -141,12 +200,15 @@ function App() {
                 >
                   Delete
                 </button>
+
               </div>
             ))}
+
           </div>
         )}
 
         <div className="features">
+
           <div>
             <strong>⚡ Fast</strong>
             <p>Create short links instantly.</p>
@@ -161,12 +223,15 @@ function App() {
             <strong>📱 Simple</strong>
             <p>Easy to share anywhere.</p>
           </div>
+
         </div>
+
       </main>
 
       <footer>
         Built with React + FastAPI
       </footer>
+
     </div>
   );
 }
